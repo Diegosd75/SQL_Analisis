@@ -1,0 +1,1080 @@
+[
+    {
+      "query": "SELECT o.order_id, c.name, o.total FROM orders o JOIN customers c ON o.customer_id = c.id WHERE o.status = 'completed' ORDER BY o.order_date DESC LIMIT 10;",
+      "score": 5,
+      "problems": [
+        "No significant issues; query is well-optimized"
+      ],
+      "solution": "Query is well-structured and optimized. Ensure indexes exist on customer_id and status for optimal performance."
+    },
+    {
+      "query": "SELECT * FROM products WHERE category = 'Electronics' AND price < 100 ORDER BY price;",
+      "score": 4,
+      "problems": [
+        "Uses SELECT * to retrieve all columns, possibly fetching unnecessary data",
+        "If no index on category or price, filtering and sorting could be slow"
+      ],
+      "solution": "Select only necessary columns instead of '*'. Ensure an index on the category (and possibly price) to speed up filtering and sorting."
+    },
+    {
+      "query": "SELECT e.name FROM employees e WHERE e.department_id IN (SELECT d.id FROM departments d WHERE d.location = 'NY');",
+      "score": 3,
+      "problems": [
+        "Uses a subquery for filtering by department location instead of a direct join",
+        "Slightly less readable; performance might be fine but could be improved with a join"
+      ],
+      "solution": "Use a JOIN to filter employees by department location for clarity and potential performance improvement (e.g., join employees with departments on department_id and filter location='NY')."
+    },
+    {
+      "query": "SELECT * FROM sales WHERE YEAR(sale_date) = 2021;",
+      "score": 2,
+      "problems": [
+        "Uses a function (YEAR()) on a date column in WHERE, preventing use of index on sale_date",
+        "Selects all columns with '*', which may retrieve more data than necessary"
+      ],
+      "solution": "Filter by date range instead of using a function (e.g., sale_date BETWEEN '2021-01-01' AND '2021-12-31') so an index on sale_date can be used. Select only required columns."
+    },
+    {
+      "query": "SELECT * FROM customers WHERE email LIKE '%@gmail.com';",
+      "score": 2,
+      "problems": [
+        "Leading wildcard in LIKE ('%@gmail.com') prevents index usage, causing a full table scan",
+        "Uses SELECT * which may retrieve unnecessary columns"
+      ],
+      "solution": "Avoid leading wildcards in LIKE to allow index use (or use full-text search for emails). Select only needed columns (e.g., customer ID and email) rather than '*'."
+    },
+    {
+      "query": "SELECT * FROM users u JOIN orders o;",
+      "score": 1,
+      "problems": [
+        "Missing JOIN condition causes a cross join, returning the Cartesian product of users and orders",
+        "Extremely inefficient and likely unintended, results in a huge result set"
+      ],
+      "solution": "Include proper join conditions (e.g., ON u.id = o.user_id) to join tables on relevant keys and limit the result set to matching records."
+    },
+    {
+      "query": "SELECT p.id, p.name, (SELECT SUM(o.quantity) FROM orders o WHERE o.product_id = p.id) AS total_ordered FROM products p;",
+      "score": 2,
+      "problems": [
+        "Correlated subquery calculates sum of orders for each product row, leading to repeated subquery execution",
+        "Inefficient for large tables (scans the orders table for every product)"
+      ],
+      "solution": "Use a JOIN with aggregation instead of a correlated subquery. For example, join products with an aggregated orders subquery or use GROUP BY product_id to calculate all sums in one query."
+    },
+    {
+      "query": "SELECT * FROM users WHERE username = 'admin' AND password = 'password123';",
+      "score": 1,
+      "problems": [
+        "Potential SQL injection risk if user input is concatenated directly into the query",
+        "Storing or comparing plaintext passwords in queries is a security vulnerability"
+      ],
+      "solution": "Use parameterized queries or prepared statements to prevent SQL injection. Store hashed passwords and compare hashes instead of using plaintext passwords in the query."
+    },
+    {
+      "query": "SELECT name age FROM employees;",
+      "score": 0,
+      "problems": [
+        "SQL syntax error - missing comma between 'name' and 'age' columns"
+      ],
+      "solution": "Add the missing comma between the column names (e.g., SELECT name, age FROM employees) to fix the syntax."
+    },
+    {
+      "query": "SELECT id, email FROM ;",
+      "score": 0,
+      "problems": [
+        "Incomplete SQL query - missing table name in the FROM clause"
+      ],
+      "solution": "Specify the table to select from (e.g., SELECT id, email FROM users;) to complete the query."
+    },
+    {
+      "query": "INSERT INTO employees (emp_id, name) VALUES (0);",
+      "score": 0,
+      "problems": [
+        "Syntax error: number of columns and values do not match."
+      ],
+      "solution": "Ensure the number of columns in the INSERT matches the number of values provided."
+    },
+    {
+      "query": "SELECT account_id FROM accounts WHERE account_id = 'Unclosed",
+      "score": 0,
+      "problems": [
+        "Syntax error: string literal is not closed."
+      ],
+      "solution": "Close the string literal with a matching quote."
+    },
+    {
+      "query": "DELETE FROM orders WHERE order_id = ;",
+      "score": 0,
+      "problems": [
+        "Syntax error: incomplete WHERE clause (no value after '=')."
+      ],
+      "solution": "Provide a value or condition after the '=' in the WHERE clause."
+    },
+    {
+      "query": "INSERT INTO products (product_id, name) VALUES (123, 'Charlie';",
+      "score": 0,
+      "problems": [
+        "Syntax error: missing closing parenthesis in VALUES clause."
+      ],
+      "solution": "Add the missing closing parenthesis in the VALUES clause."
+    },
+    {
+      "query": "SELECT order_id, product_id orders;",
+      "score": 0,
+      "problems": [
+        "Syntax error: missing FROM keyword."
+      ],
+      "solution": "Include the FROM keyword and specify the table name after it."
+    },
+    {
+      "query": "DELETE FROM products WHERE product_id = 5;",
+      "score": 2,
+      "problems": [
+        "Potential lack of access control: this delete could be executed by an unauthorized user if not protected."
+      ],
+      "solution": "Restrict delete operations to privileged users and add appropriate checks before performing such deletions."
+    },
+    {
+      "query": "UPDATE sessions SET login_time = NOW() WHERE session_id = 100 OR 1=1;",
+      "score": 2,
+      "problems": [
+        "SQL injection vulnerability: `OR 1=1` makes the WHERE clause always true, potentially updating all rows."
+      ],
+      "solution": "Use parameterized queries and eliminate tautological conditions; never directly include unsanitized input in the WHERE clause."
+    },
+    {
+      "query": "INSERT INTO departments VALUES (42, 'Finance');",
+      "score": 2,
+      "problems": [
+        "Relies on implicit column order by not specifying columns (maintenance and readability issue)."
+      ],
+      "solution": "Explicitly list the target columns in the INSERT statement to improve clarity and prevent errors if the schema changes."
+    },
+    {
+      "query": "SELECT log_id,event FROM logs WHERElog_id=0ANDevent='login';",
+      "score": 2,
+      "problems": [
+        "Lacks proper spacing/formatting, making the query hard to read and maintain."
+      ],
+      "solution": "Format the SQL with proper spacing or line breaks for better readability."
+    },
+    {
+      "query": "SELECT * FROM transactions WHERE trans_id LIKE '%Oscar%';",
+      "score": 2,
+      "problems": [
+        "Leading wildcard in LIKE on `trans_id` causes a full table scan (performance issue)."
+      ],
+      "solution": "Avoid leading wildcards or use full-text indexing if needed; ensure proper indexing for search patterns."
+    },
+    {
+      "query": "INSERT INTO sessions (session_id) VALUES (456), (456);",
+      "score": 2,
+      "problems": [
+        "Inserts duplicate value into unique column `session_id`, causing a potential unique constraint violation."
+      ],
+      "solution": "Avoid inserting duplicate values into columns that should be unique; enforce uniqueness with constraints and validate data before insertion."
+    },
+    {
+      "query": "UPDATE logs SET event = 'error' WHERE event LIKE '%Trent%';",
+      "score": 2,
+      "problems": [
+        "Updates rows broadly where `event` matches a loose pattern, which may not be intended and is inefficient."
+      ],
+      "solution": "Use a stricter condition to match only intended records or refine the pattern to avoid unintended updates."
+    },
+    {
+      "query": "ALTER TABLE orders MODIFY COLUMN order_id VARCHAR(50);",
+      "score": 2,
+      "problems": [
+        "Alters column `order_id` which could be expensive on a large table without precautions."
+      ],
+      "solution": "Plan schema changes carefully for large tables (use online DDL or perform changes during maintenance windows to reduce impact)."
+    },
+    {
+      "query": "UPDATE users SET password = 'password123';",
+      "score": 1,
+      "problems": [
+        "No WHERE clause; this updates every row in the table, which is likely a critical mistake."
+      ],
+      "solution": "Add a WHERE clause to restrict the update to intended records only."
+    },
+    {
+      "query": "INSERT INTO transactions (trans_id) VALUES ('\" + userInput + \"');",
+      "score": 1,
+      "problems": [
+        "SQL injection vulnerability: user input is directly concatenated into the SQL string."
+      ],
+      "solution": "Use prepared statements with placeholders or sanitized parameters to prevent SQL injection."
+    },
+    {
+      "query": "DELETE FROM orders;",
+      "score": 1,
+      "problems": [
+        "No WHERE clause; this will delete all records, which is likely a serious mistake."
+      ],
+      "solution": "Always include a WHERE clause to avoid deleting all records accidentally."
+    },
+    {
+      "query": "SELECT * FROM messages;",
+      "score": 1,
+      "problems": [
+        "Retrieves all data, possibly including sensitive information, with no filtering or access control."
+      ],
+      "solution": "Limit the data retrieved to what is needed and ensure proper access control to protect sensitive information."
+    },
+    {
+      "query": "DROP TABLE users;",
+      "score": 1,
+      "problems": [
+        "Drops a critical table, which could be executed maliciously or accidentally (severe data loss risk)."
+      ],
+      "solution": "Restrict DROP TABLE permissions to administrators, and implement confirmation or backup procedures before dropping critical tables."
+    },
+    {
+      "query": "SELECT emp_id, name FROM employees, departments;",
+      "score": 1,
+      "problems": [
+        "Missing join condition results in a Cartesian join, combining every row from both tables (extremely inefficient)."
+      ],
+      "solution": "Include proper JOIN conditions (ON or WHERE clauses) to combine tables correctly; avoid Cartesian joins."
+    },
+    {
+      "query": "GRANT ALL PRIVILEGES ON *.* TO 'public'@'%';",
+      "score": 1,
+      "problems": [
+        "Grants all privileges to a public user on all databases, creating a massive security risk."
+      ],
+      "solution": "Adhere to the principle of least privilege: grant specific necessary privileges to specific users, not ALL privileges to all users."
+    },
+    {
+      "query": "INSERT INTO messages VALUES (1, 42, 10, 'Update completed', 'Charlie');",
+      "score": 4,
+      "problems": [
+        "Does not specify column names, relying on implicit column order."
+      ],
+      "solution": "Specify column names in the INSERT statement for clarity and to avoid issues if the table schema changes."
+    },
+    {
+      "query": "UPDATE logs SET event = 'login' WHERE log_id >= 42;",
+      "score": 4,
+      "problems": [
+        "WHERE clause `log_id >= 42` may affect more rows than intended if a specific row update was needed."
+      ],
+      "solution": "Use a more precise WHERE condition to limit affected rows to only those intended."
+    },
+    {
+      "query": "DELETE FROM transactions WHERE trans_id > 456;",
+      "score": 4,
+      "problems": [
+        "Broad condition in WHERE clause (`trans_id > ...`) could affect more rows than intended."
+      ],
+      "solution": "Use a more specific condition or additional filters to ensure only intended records are deleted."
+    },
+    {
+      "query": "CREATE TABLE archive (id INT, name VARCHAR(50));",
+      "score": 4,
+      "problems": [
+        "No primary key or constraints defined (minor oversight)."
+      ],
+      "solution": "Define a primary key and any necessary constraints (e.g., NOT NULL) to ensure data integrity."
+    },
+    {
+      "query": "INSERT INTO sessions (session_id, user_id, login_time, logout_time) VALUES (999, 789, '2020-12-31', '2021-01-01');",
+      "score": 5,
+      "problems": [],
+      "solution": "No improvements needed; the INSERT statement is well-formed and follows best practices."
+    },
+    {
+      "query": "CREATE INDEX idx_departments_name ON departments(name);",
+      "score": 5,
+      "problems": [],
+      "solution": "No improvements needed; the index creation statement is appropriate and follows best practices."
+    },
+    {
+      "query": "UPDATE users SET username = 'victor' WHERE id = 100;",
+      "score": 5,
+      "problems": [],
+      "solution": "No improvements needed; the UPDATE statement is optimal, with proper filtering."
+    },
+    {
+      "query": "DELETE FROM orders WHERE order_id = 1;",
+      "score": 5,
+      "problems": [],
+      "solution": "No improvements needed; the DELETE statement is well-structured and safe."
+    },
+    {
+      "query": "SELECT s.login_time, l.event FROM sessions s JOIN logs l ON s.user_id = l.user_id;",
+      "score": 5,
+      "problems": [],
+      "solution": "No improvements needed; the query is efficient, clear, and secure."
+    },
+    {
+      "query": "SELECT id FROM orders WHERE id = 999;",
+      "score": 5,
+      "problems": [],
+      "solution": "No improvements needed; the query is well-written, optimized, and secure."
+    },
+    {
+      "query": "UPDATE accounts SET balance = 999 WHERE account_id = 1;",
+      "score": 5,
+      "problems": [],
+      "solution": "No improvements needed; the UPDATE statement is optimal and safe."
+    },
+    {
+      "query": "INSERT INTO logs (log_id, user_id) VALUES (456, 10);",
+      "score": 5,
+      "problems": [],
+      "solution": "No improvements needed; the INSERT statement is well-formed and follows best practices."
+    },
+    {
+      "query": "DELETE FROM sessions WHERE session_id = 789;",
+      "score": 5,
+      "problems": [],
+      "solution": "No improvements needed; the DELETE statement is well-structured and safe."
+    },
+    {
+      "query": "SELECT order_id, user_id FROM orders WHERE order_id = 5;",
+      "score": 5,
+      "problems": [],
+      "solution": "No improvements needed; the query is well-written, optimized, and secure."
+    },
+    {
+      "query": "CREATE TABLE analytics (id INT PRIMARY KEY, name VARCHAR(100) NOT NULL, created_at DATETIME DEFAULT CURRENT_TIMESTAMP);",
+      "score": 5,
+      "problems": [],
+      "solution": "No improvements needed; the DDL statement is well-designed and follows best practices."
+    },
+    {
+      "query": "INSERT INTO messages (msg_id, message) VALUES (789, 'Test message');",
+      "score": 3,
+      "problems": [
+        "No column list specified, which can reduce clarity."
+      ],
+      "solution": "Include the column names in the INSERT statement for better clarity and maintainability."
+    },
+    {
+      "query": "UPDATE orders SET quantity = (SELECT order_date FROM employees WHERE employees.id = orders.id) WHERE order_id = 10;",
+      "score": 3,
+      "problems": [
+        "Uses a subquery in the SET clause, which might be less efficient than a JOIN update."
+      ],
+      "solution": "Consider using a JOIN in the UPDATE statement to set values from another table, which can be more efficient and clearer."
+    },
+    {
+      "query": "DELETE FROM departments WHERE dept_id > 123;",
+      "score": 3,
+      "problems": [
+        "Potentially deletes many rows without a limit; ensure this range is intended."
+      ],
+      "solution": "Double-check the condition or consider using LIMIT (if supported) to avoid deleting more rows than intended."
+    },
+    {
+      "query": "INSERT INTO sessions (login_time) VALUES ('2021-01-01');",
+      "score": 3,
+      "problems": [
+        "Stores date/time as string for column `login_time` instead of using proper date literal or function."
+      ],
+      "solution": "Use a date/time literal or function (without quotes) for date columns (e.g., use CURRENT_TIMESTAMP without quotes) to store date/time values correctly."
+    },
+    {
+      "query": "CREATE VIEW view_accounts AS SELECT * FROM accounts;",
+      "score": 3,
+      "problems": [
+        "View definition uses SELECT * (schema changes could affect the view)."
+      ],
+      "solution": "Define the view with explicit columns instead of SELECT *, so it remains stable if the table schema changes."
+    },
+    {
+      "query": "SELECT trans_id, amount FROM transactions WHERE trans_id > 100;",
+      "score": 3,
+      "problems": [
+        "No LIMIT on a query that might return many rows, potentially impacting performance."
+      ],
+      "solution": "Add a LIMIT clause or refine the WHERE clause if only a subset of results is needed."
+    },
+    {
+      "query": "SELECT * FROM users WHERE username = 'alice';",
+      "score": 3,
+      "problems": [
+        "SELECT * retrieves all columns, which could be inefficient if not all are needed."
+      ],
+      "solution": "Select only necessary columns instead of using SELECT * for better performance and clarity."
+    },
+    {
+      "query": "DROP TABLE sessions;",
+      "score": 3,
+      "problems": [
+        "Drops a table directly; risk of data loss if done accidentally or without backup."
+      ],
+      "solution": "Ensure a backup exists or use conditional drop (IF EXISTS) to avoid errors, and restrict drop operations to authorized users."
+    },
+    {
+      "query": "UPDATE employees SET salary = 100 WHERE salary = 100;",
+      "score": 3,
+      "problems": [
+        "Filters on `salary` which might not be indexed, leading to a full table scan for the update."
+      ],
+      "solution": "Ensure `salary` is indexed or use a different column in the WHERE clause that has an index to improve performance."
+    },
+    {
+      "query": "DELETE FROM accounts WHERE opened_date = '2022-06-15';",
+      "score": 3,
+      "problems": [
+        "Deletion filtering on `opened_date` which might not be indexed, causing a full table scan."
+      ],
+      "solution": "Add an index on `opened_date` if it's used frequently in conditions, to improve delete performance."
+    },
+    {
+      "query": "CREATE TABLE backup (id INT, data TEXT);",
+      "score": 3,
+      "problems": [
+        "No explicit PRIMARY KEY defined; using generic data type TEXT (could be more specific)."
+      ],
+      "solution": "Designate a primary key for the table and choose appropriate data types (use more specific types or length limits instead of generic TEXT if possible)."
+    },
+    {
+      "query": "INSERT INTO orders (order_date) VALUES (UPPER('david'));",
+      "score": 3,
+      "problems": [
+        "Uses a function on a constant value in the INSERT (inefficient, could uppercase beforehand)."
+      ],
+      "solution": "Apply constant transformations in application code rather than in the SQL, to avoid unnecessary function calls in the query."
+    },
+    {
+      "query": "UPDATE users SET role = 'admin';",
+      "score": 1,
+      "problems": [
+        "Elevates privileges for all users to admin due to missing WHERE clause (security issue)."
+      ],
+      "solution": "Never update user roles without specifying the target user; include a WHERE clause for the specific user and ensure proper authorization."
+    },
+    {
+      "query": "SELECT id, username, password FROM users;",
+      "score": 1,
+      "problems": [
+        "Selecting all users including passwords, which is sensitive information, without restrictions."
+      ],
+      "solution": "Select only necessary fields and exclude sensitive data (like passwords) or encrypt them; implement access controls."
+    },
+    {
+      "query": "SELECT * FROM departments;",
+      "score": 1,
+      "problems": [
+        "No WHERE clause; this will retrieve all records, causing performance issues and potentially exposing data."
+      ],
+      "solution": "Add a WHERE clause to filter results to only the data that is needed."
+    },
+    {
+      "query": "DELETE FROM employees WHERE name = 'bob' OR 'a'='a';",
+      "score": 1,
+      "problems": [
+        "SQL injection vulnerability: condition `OR 'a'='a'` is always true, allowing deletion of all rows."
+      ],
+      "solution": "Use parameter binding to prevent injection and remove tautological conditions from the query."
+    },
+    {
+      "query": "INSERT INTO orders VALUES (42, 999, 42, 5, '2020-12-31');",
+      "score": 1,
+      "problems": [
+        "Does not specify column names; if the table schema changes, this INSERT could break (poor practice)."
+      ],
+      "solution": "Always specify the target columns in an INSERT for clarity and to safeguard against schema changes."
+    },
+    {
+      "query": "UPDATE employees SET isAdmin = 1 WHERE emp_id > 0;",
+      "score": 1,
+      "problems": [
+        "Grants admin privileges to all users matching a broad condition (security risk)."
+      ],
+      "solution": "Limit privilege changes to specific users with explicit conditions, and ensure such queries are run only by authorized personnel."
+    },
+    {
+      "query": "INSERT INTO accounts (account_id, user_id, balance) VALUES (NULL, 123, 1000);",
+      "score": 1,
+      "problems": [
+        "Explicitly inserts NULL for an auto-generated or default column."
+      ],
+      "solution": "Omit columns with auto-generated values or defaults instead of inserting NULL explicitly, to avoid potential issues and for clarity."
+    },
+    {
+      "query": "CREATE TABLE reports (select INT, password TEXT);",
+      "score": 1,
+      "problems": [
+        "Uses a SQL reserved keyword 'select' as a column name (invalid and confusing).",
+        "Stores sensitive data ('password') in plain text, which is insecure."
+      ],
+      "solution": "Rename or quote reserved keywords used as column names, and avoid storing sensitive data like passwords in plain text (use hashing or encryption)."
+    },
+    {
+      "query": "UPDATE users SET isAdmin = 1 WHERE username = 'admin' OR '1'='1';",
+      "score": 1,
+      "problems": [
+        "Unconditionally grants admin privileges due to `OR '1'='1'` (injection/logic flaw)."
+      ],
+      "solution": "Remove tautological conditions and ensure privilege changes are tightly controlled and specific."
+    },
+    {
+      "query": "DELETE FROM logs;",
+      "score": 1,
+      "problems": [
+        "No WHERE clause; this will delete all records, which is likely a serious mistake."
+      ],
+      "solution": "Always include a WHERE clause to avoid deleting all records accidentally."
+    },
+    {
+      "query": "DELETE FROM messages WHERE msg_id = 1; DROP TABLE messages;",
+      "score": 1,
+      "problems": [
+        "Multiple statements combined: includes a dangerous DROP TABLE (likely via SQL injection)."
+      ],
+      "solution": "Disallow multiple statements in one query and sanitize inputs; use parameterized queries to prevent injection that could execute unwanted commands."
+    },
+    {
+      "query": "INSERT INTO users VALUES (1, 'mallory', 'password123', 'mallory@example.com', '2022-06-15');",
+      "score": 1,
+      "problems": [
+        "Does not specify column names; if the table schema changes, this INSERT could break (poor practice)."
+      ],
+      "solution": "Always specify the target columns in an INSERT for clarity and to safeguard against schema changes."
+    },
+    {
+      "query": "INSERT INTO accounts (account_id) SELECT account_id FROM accounts;",
+      "score": 1,
+      "problems": [
+        "Performs an INSERT...SELECT that duplicates data from the same table, potentially causing duplicate key errors with no checks."
+      ],
+      "solution": "Implement checks or constraints (e.g., UNIQUE constraint or existence check) to prevent inserting duplicate data."
+    },
+    {
+      "query": "INSERT INTO orders (order_id) VALUES ('text');",
+      "score": 1,
+      "problems": [
+        "Inserts a non-numeric string into numeric column `order_id`, causing a data type mismatch."
+      ],
+      "solution": "Provide values matching the column data type or convert them appropriately; avoid inserting strings into numeric fields."
+    },
+    {
+      "query": "UPDATE sessions SET user_id = user_id WHERE session_id = 999;",
+      "score": 4,
+      "problems": [
+        "Sets `user_id` to itself (no actual change), which is unnecessary."
+      ],
+      "solution": "Remove columns that do not need to be updated; update only the necessary fields."
+    },
+    {
+      "query": "DELETE FROM orders WHERE order_id = 5 AND order_id = 5;",
+      "score": 4,
+      "problems": [
+        "Contains a redundant condition on `order_id`; the same condition is repeated unnecessarily."
+      ],
+      "solution": "Remove duplicate conditions in the WHERE clause for clarity."
+    },
+    {
+      "query": "SELECT emp_id, department FROM employees WHERE LOWER(emp_id) = LOWER('42');",
+      "score": 4,
+      "problems": [
+        "Uses a function (LOWER) on column `emp_id` in the WHERE clause, preventing index use."
+      ],
+      "solution": "Use case-insensitive collation or store normalized values to avoid wrapping `emp_id` in a function for filtering."
+    },
+    {
+      "query": "UPDATE accounts SET user_id = CAST(42 AS INT) WHERE account_id = 0;",
+      "score": 4,
+      "problems": [
+        "Unnecessary CAST in SET clause for user_id (the value 42 is already numeric)."
+      ],
+      "solution": "Remove unnecessary CAST or function calls on literal values to simplify the query."
+    },
+    {
+      "query": "INSERT INTO messages (msg_id) VALUES (NULL);",
+      "score": 4,
+      "problems": [
+        "Explicitly inserts NULL for an auto-generated or default column."
+      ],
+      "solution": "Omit columns with auto-generated values or defaults instead of inserting NULL explicitly, to avoid potential issues and for clarity."
+    },
+    {
+      "query": "GRANT SELECT ON database.* TO 'trent'@'%';",
+      "score": 4,
+      "problems": [
+        "Grants privileges on all tables in the database, which might be more broad than necessary."
+      ],
+      "solution": "Grant privileges on specific tables or use a more restricted scope to adhere to the principle of least privilege."
+    },
+    {
+      "query": "INSERT INTO orders (order_id, product_id) VALUES (42, 42);",
+      "score": 4,
+      "problems": [
+        "Does not specify column names, relying on implicit column order."
+      ],
+      "solution": "Specify column names in the INSERT statement for clarity and to avoid issues if the table schema changes."
+    },
+    {
+      "query": "ALTER TABLE messages ADD COLUMN new_col INT;",
+      "score": 4,
+      "problems": [
+        "Adds a column without specifying DEFAULT or NOT NULL (could affect existing data)."
+      ],
+      "solution": "If adding a column to an existing table, consider setting a DEFAULT value or allowing NULL to avoid issues with existing rows."
+    },
+    {
+      "query": "UPDATE products SET stock = stock WHERE product_id = 5;",
+      "score": 4,
+      "problems": [
+        "Sets `stock` to itself (no actual change), which is unnecessary."
+      ],
+      "solution": "Remove columns that do not need to be updated; update only the necessary fields."
+    },
+    {
+      "query": "INSERT INTO departments (dept_id) VALUES (12345);",
+      "score": 1,
+      "problems": [
+        "Inserts a numeric literal into text column `dept_id` without quotes, relying on implicit conversion."
+      ],
+      "solution": "Quote string values and ensure the literal types match the column definitions to avoid implicit conversions or errors."
+    },
+    {
+      "query": "SELECT id, username, email FROM users;",
+      "score": 5,
+      "problems": [],
+      "solution": "No improvements needed; the query is well-written, optimized, and secure."
+    },
+    {
+      "query": "INSERT INTO users (email) VALUES ('mallory@example.com');",
+      "score": 5,
+      "problems": [],
+      "solution": "No improvements needed; the INSERT statement is well-formed and follows best practices."
+    },
+    {
+      "query": "UPDATE transactions SET amount = 100 WHERE trans_id = 42;",
+      "score": 5,
+      "problems": [],
+      "solution": "No improvements needed; the UPDATE statement is optimal and safe."
+    },
+    {
+      "query": "DELETE FROM employees WHERE emp_id = 42;",
+      "score": 5,
+      "problems": [],
+      "solution": "No improvements needed; the DELETE statement is well-structured and safe."
+    },
+    {
+      "query": "SELECT log_id, event FROM logs WHERE log_id = 42;",
+      "score": 5,
+      "problems": [],
+      "solution": "No improvements needed; the query is efficient, clear, and secure."
+    },
+    {
+      "query": "CREATE TABLE temp_table (id INT PRIMARY KEY, name VARCHAR(100) NOT NULL, created_at DATETIME DEFAULT CURRENT_TIMESTAMP);",
+      "score": 5,
+      "problems": [],
+      "solution": "No improvements needed; the DDL statement is well-designed and follows best practices."
+    },
+    {
+      "query": "SELECT * FROM orders WHERE order_id = 42 OR order_id = 42;",
+      "score": 4,
+      "problems": [
+        "Contains a redundant WHERE condition (`order_id = 42` is repeated)."
+      ],
+      "solution": "Remove duplicate or redundant conditions to simplify the query."
+    },
+    {
+      "query": "INSERT INTO sessions VALUES (123, 999, '2020-12-31', '2021-01-01');",
+      "score": 3,
+      "problems": [
+        "No column list specified, which can reduce clarity."
+      ],
+      "solution": "Include the column names in the INSERT statement for better clarity and maintainability."
+    },
+    {
+      "query": "DELETE FROM orders WHERE order_id LIKE '%';",
+      "score": 2,
+      "problems": [
+        "The WHERE clause condition is too broad (`LIKE '%'` matches everything), resulting in all records being deleted."
+      ],
+      "solution": "Use a more specific pattern in the LIKE clause or a different condition to avoid matching all records unintentionally."
+    },
+    {
+      "query": "INSERT INTO transactions (account_id) VALUES (\" + userInput + \");",
+      "score": 2,
+      "problems": [
+        "Potential SQL injection: constructing the INSERT query using unsanitized input."
+      ],
+      "solution": "Use parameterized statements or escape user input rather than directly concatenating it into an SQL query."
+    },
+    {
+      "query": "SELECT id, username, password FROM employees;",
+      "score": 2,
+      "problems": [
+        "Selects sensitive data (passwords) without restrictions, risking exposure."
+      ],
+      "solution": "Avoid selecting sensitive columns like passwords unless necessary, and ensure proper access controls if such data is accessed."
+    },
+    {
+      "query": "INSERT INTO users (username, password) VALUES ('trent', 'letmein')",
+      "score": 0,
+      "problems": [
+        "Syntax error: missing closing parenthesis in CREATE TABLE statement."
+      ],
+      "solution": "Add the missing closing parenthesis (and semicolon) to complete the CREATE TABLE statement."
+    },
+    {
+      "query": "UPDTE accounts SET balance = 100 WHERE account_id = 10;",
+      "score": 0,
+      "problems": [
+        "Syntax error: 'UPDATE' keyword is misspelled."
+      ],
+      "solution": "Correct the spelling of the 'UPDATE' keyword."
+    },
+    {
+      "query": "UPDATE messages SET receiver_id = 'Mallory' WHERE;",
+      "score": 0,
+      "problems": [
+        "Syntax error: incomplete WHERE clause."
+      ],
+      "solution": "Complete the WHERE clause with a condition or remove it if updating all rows intentionally (with caution)."
+    },
+    {
+      "query": "INSERT INTO orders (order_id, product_id) VALUES (42, );",
+      "score": 0,
+      "problems": [
+        "Syntax error: missing a value in the VALUES list."
+      ],
+      "solution": "Provide values for all specified columns in the VALUES clause."
+    },
+    {
+      "query": "CREAT TABLE backup (id INT PRIMARY KEY);",
+      "score": 0,
+      "problems": [
+        "Syntax error: 'CREATE' keyword is misspelled."
+      ],
+      "solution": "Use the correct 'CREATE TABLE' syntax (spell 'CREATE' correctly)."
+    },
+    {
+      "query": "INSERT INTO products (product_id) VALUE (5);",
+      "score": 0,
+      "problems": [
+        "Syntax error: 'VALUES' keyword is misspelled as 'VALUE'."
+      ],
+      "solution": "Use the correct 'VALUES' keyword in the INSERT statement."
+    },
+    {
+      "query": "ALTER TABLE employees ADD (column1 INT;",
+      "score": 0,
+      "problems": [
+        "Syntax error: parenthesis opened but not closed in ALTER TABLE statement."
+      ],
+      "solution": "Remove the unmatched parenthesis or close it properly in the ALTER TABLE statement."
+    },
+    {
+      "query": "UPDATE orders SET quantity = 5 order_id = 42;",
+      "score": 0,
+      "problems": [
+        "Syntax error: missing 'WHERE' keyword."
+      ],
+      "solution": "Include a specific WHERE clause to target only the intended rows for update."
+    },
+    {
+      "query": "DELETE sessions WHERE session_id = 999;",
+      "score": 0,
+      "problems": [
+        "Syntax error: missing 'FROM' keyword."
+      ],
+      "solution": "Include the 'FROM' keyword after DELETE."
+    },
+    {
+      "query": "SELECT FROM users;",
+      "score": 0,
+      "problems": [
+        "Syntax error: no columns specified after SELECT."
+      ],
+      "solution": "Specify at least one column or use * after the SELECT keyword."
+    },
+    {
+      "query": "UPDATE accounts SET balance = 100 WHERE account_id",
+      "score": 0,
+      "problems": [
+        "Syntax error: missing value in WHERE clause."
+      ],
+      "solution": "Provide a value or parameter after the '=' in the WHERE clause."
+    },
+    {
+      "query": "INSERT INTO archive (id, name) VALUES (42, 'David');",
+      "score": 5,
+      "problems": [],
+      "solution": "No improvements needed; the INSERT statement is well-formed and follows best practices."
+    },
+    {
+      "query": "SELECT dept_id, name FROM departments WHERE dept_id = 123;",
+      "score": 5,
+      "problems": [],
+      "solution": "No improvements needed; the query is well-written, optimized, and secure."
+    },
+    {
+      "query": "UPDATE orders SET quantity = 10 WHERE order_id = 999;",
+      "score": 5,
+      "problems": [],
+      "solution": "No improvements needed; the UPDATE statement is optimal and safe."
+    },
+    {
+      "query": "DELETE FROM messages WHERE msg_id = 999;",
+      "score": 5,
+      "problems": [],
+      "solution": "No improvements needed; the DELETE statement is well-structured and safe."
+    },
+    {
+      "query": "SELECT sender_id, receiver_id FROM messages WHERE msg_id = 42;",
+      "score": 5,
+      "problems": [],
+      "solution": "No improvements needed; the query is efficient, clear, and secure."
+    },
+    {
+      "query": "CREATE TABLE archive (id INT, name VARCHAR(100) NOT NULL, created_at DATETIME DEFAULT CURRENT_TIMESTAMP);",
+      "score": 5,
+      "problems": [],
+      "solution": "No improvements needed; the DDL statement is well-designed and follows best practices."
+    },
+    {
+      "query": "SELECT event FROM logs WHERE LOWER(event) = LOWER('update');",
+      "score": 4,
+      "problems": [
+        "Uses a function (LOWER) on column `event` in the WHERE clause, preventing index use."
+      ],
+      "solution": "Use case-insensitive collation or store normalized values to avoid wrapping `event` in a function for filtering."
+    },
+    {
+      "query": "UPDATE sessions SET user_id = 456 WHERE login_time > 5;",
+      "score": 3,
+      "problems": [
+        "The WHERE clause might affect many rows; no safeguard to limit the update if it was meant to be limited."
+      ],
+      "solution": "Refine the WHERE clause criteria to target specific rows (and use LIMIT if supported and appropriate) to avoid affecting unintended rows."
+    },
+    {
+      "query": "INSERT INTO employees (emp_id, name, department) VALUES (5, 'Bob', 'Engineering')",
+      "score": 0,
+      "problems": [
+        "Syntax error: missing closing parenthesis in CREATE TABLE statement."
+      ],
+      "solution": "Add the missing closing parenthesis (and semicolon) to complete the CREATE TABLE statement."
+    },
+    {
+      "query": "INSERT INTO messages (msg_id, message) VALUES (12345);",
+      "score": 0,
+      "problems": [
+        "Syntax error: number of columns and values do not match."
+      ],
+      "solution": "Ensure the number of columns in the INSERT matches the number of values provided."
+    },
+    {
+      "query": "DELETE FROM accounts WHERE opened_date = '2022-06-15';",
+      "score": 2,
+      "problems": [
+        "The WHERE clause condition is too broad (`LIKE '%'` matches everything), resulting in all records being deleted."
+      ],
+      "solution": "Use a more specific pattern in the LIKE clause or a different condition to avoid matching all records unintentionally."
+    },
+    {
+      "query": "INSERT INTO archive (id) VALUES (5);",
+      "score": 4,
+      "problems": [
+        "Does not specify column names, relying on implicit column order."
+      ],
+      "solution": "Specify column names in the INSERT statement for clarity and to avoid issues if the table schema changes."
+    },
+    {
+      "query": "UPDATE departments SET name = 'Trent' WHERE name = 'Charlie';",
+      "score": 3,
+      "problems": [
+        "Filters on `name` which might not be indexed, leading to a full table scan for the update."
+      ],
+      "solution": "Ensure `name` is indexed or use a different column in the WHERE clause that has an index to improve performance."
+    },
+    {
+      "query": "SELECT * FROM orders;",
+      "score": 2,
+      "problems": [
+        "No WHERE clause provided, potentially retrieving unneeded data (inefficient)."
+      ],
+      "solution": "Add an appropriate WHERE clause to filter results and reduce the amount of data processed."
+    },
+    {
+      "query": "EXEC xp_cmdshell 'net user Oscar /add';",
+      "score": 1,
+      "problems": [
+        "Executes a system shell command via SQL (potential privilege escalation and security risk)."
+      ],
+      "solution": "Disable or restrict functions that allow executing shell commands from SQL (e.g., xp_cmdshell) and avoid their use, to prevent security vulnerabilities."
+    },
+    {
+      "query": "UPDATE logs SET event = 'update' WHERE log_id = 123;",
+      "score": 5,
+      "problems": [],
+      "solution": "No improvements needed; the UPDATE statement is optimal and safe."
+    },
+    {
+      "query": "INSERT INTO orders (order_date) VALUES ('2022-06-15');",
+      "score": 5,
+      "problems": [],
+      "solution": "No improvements needed; the INSERT statement is well-formed and follows best practices."
+    },
+    {
+      "query": "UPDATE accounts SET balance = 50000 WHERE account_id = 42;",
+      "score": 5,
+      "problems": [],
+      "solution": "No improvements needed; the UPDATE statement is optimal and safe."
+    },
+    {
+      "query": "DELETE FROM users WHERE id = 123;",
+      "score": 5,
+      "problems": [],
+      "solution": "No improvements needed; the DELETE statement is well-structured and safe."
+    },
+    {
+      "query": "SELECT username, email FROM users WHERE id = 1;",
+      "score": 5,
+      "problems": [],
+      "solution": "No improvements needed; the query is well-written, optimized, and secure."
+    },
+    {
+      "query": "CREATE TABLE reports (id INT PRIMARY KEY, name VARCHAR(100) NOT NULL, created_at DATETIME DEFAULT CURRENT_TIMESTAMP);",
+      "score": 5,
+      "problems": [],
+      "solution": "No improvements needed; the DDL statement is well-designed and follows best practices."
+    },
+    {
+      "query": "SELECT name FROM employees WHERE department = 'Sales' OR department = 'sales';",
+      "score": 2,
+      "problems": [
+        "Uses OR on the same field with different cases; could lead to scanning without index if case-sensitive."
+      ],
+      "solution": "Normalize the department values or use case-insensitive comparison to avoid scanning twice; ensure proper indexing or search method."
+    },
+    {
+      "query": "DELETE FROM users WHERE id = 5;",
+      "score": 2,
+      "problems": [
+        "Potential lack of access control: dangerous delete operation if executed by an unauthorized user."
+      ],
+      "solution": "Restrict delete operations to privileged users and add appropriate checks before performing such deletions."
+    },
+    {
+      "query": "INSERT INTO archive (name) VALUES ('Eve');",
+      "score": 5,
+      "problems": [],
+      "solution": "No improvements needed; the INSERT statement is well-formed and follows best practices."
+    },
+    {
+      "query": "UPDATE orders SET quantity = 10 WHERE order_id = 5;",
+      "score": 5,
+      "problems": [],
+      "solution": "No improvements needed; the UPDATE statement is optimal and safe."
+    },
+    {
+      "query": "DELETE FROM products WHERE product_id = 123;",
+      "score": 5,
+      "problems": [],
+      "solution": "No improvements needed; the DELETE statement is well-structured and safe."
+    },
+    {
+      "query": "SELECT name, price FROM products WHERE product_id = 42;",
+      "score": 5,
+      "problems": [],
+      "solution": "No improvements needed; the query is well-written, optimized, and secure."
+    },
+    {
+      "query": "CREATE TABLE temp_table (id INT, name VARCHAR(100));",
+      "score": 4,
+      "problems": [
+        "No primary key or constraints defined (minor oversight)."
+      ],
+      "solution": "Define a primary key and any necessary constraints (e.g., NOT NULL) to ensure data integrity."
+    },
+    {
+      "query": "SELECT emp_id, name FROM employees WHERE LOWER(emp_id) = LOWER('5');",
+      "score": 4,
+      "problems": [
+        "Uses a function (LOWER) on column `emp_id` in the WHERE clause, preventing index use."
+      ],
+      "solution": "Use case-insensitive collation or store normalized values to avoid wrapping `emp_id` in a function for filtering."
+    },
+    {
+      "query": "UPDATE logs SET event = event WHERE log_id = 42;",
+      "score": 4,
+      "problems": [
+        "Sets `event` to itself (no actual change), which is unnecessary."
+      ],
+      "solution": "Remove columns that do not need to be updated; update only the necessary fields."
+    },
+    {
+      "query": "DELETE FROM users WHERE id = 5 AND id = 5;",
+      "score": 4,
+      "problems": [
+        "Contains a redundant condition on `id`; the same condition is repeated unnecessarily."
+      ],
+      "solution": "Remove duplicate conditions in the WHERE clause for clarity."
+    },
+    {
+      "query": "INSERT INTO products (price) VALUES ('10');",
+      "score": 3,
+      "problems": [
+        "Numeric value 10 is provided as a quoted string for column `price` (implicit conversion)."
+      ],
+      "solution": "Provide numeric values without quotes to avoid implicit conversion; use correct data types for each literal."
+    },
+    {
+      "query": "UPDATE messages SET sender_id = 123 WHERE msg_id > 100;",
+      "score": 3,
+      "problems": [
+        "May impact a large number of rows; double-check the WHERE clause to ensure only intended rows are updated."
+      ],
+      "solution": "Refine the WHERE clause criteria (or use LIMIT if supported) to ensure only the intended rows are updated."
+    },
+    {
+      "query": "INSERT INTO employees (emp_id) VALUES (12345);",
+      "score": 3,
+      "problems": [
+        "No column list specified, which can reduce clarity."
+      ],
+      "solution": "Include the column names in the INSERT statement for better clarity and maintainability."
+    },
+    {
+      "query": "SELECT event FROM logs WHERE log_id = 100;",
+      "score": 5,
+      "problems": [],
+      "solution": "No improvements needed; the query is efficient, clear, and secure."
+    },
+    {
+      "query": "INSERT INTO users (username, password, email) VALUES ('victor', 'qwerty', 'victor@example.com');",
+      "score": 5,
+      "problems": [],
+      "solution": "No improvements needed; the INSERT statement is well-formed and follows best practices."
+    },
+    {
+      "query": "UPDATE products SET stock = 999 WHERE product_id = 123;",
+      "score": 5,
+      "problems": [],
+      "solution": "No improvements needed; the UPDATE statement is optimal and safe."
+    },
+    {
+      "query": "DELETE FROM logs WHERE log_id = 456;",
+      "score": 5,
+      "problems": [],
+      "solution": "No improvements needed; the DELETE statement is well-structured and safe."
+    },
+    {
+      "query": "SELECT order_id, quantity FROM orders WHERE user_id = 5;",
+      "score": 5,
+      "problems": [],
+      "solution": "No improvements needed; the query is well-written, optimized, and secure."
+    },
+    {
+      "query": "CREATE TABLE analytics (id INT, data TEXT);",
+      "score": 3,
+      "problems": [
+        "No explicit PRIMARY KEY defined; using generic data type TEXT (could be more specific)."
+      ],
+      "solution": "Designate a primary key for the table and choose appropriate data types (use more specific types or length limits instead of generic TEXT if possible)."
+    }
+  ]
+  
+  
